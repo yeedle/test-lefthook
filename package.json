@@ -50,7 +50,7 @@
     "@nestjs/platform-fastify": "^9.2.1",
     "@nestjs/terminus": "^9.1.1",
     "@sentry/hub": "^6.19.7",
-    "@sentry/node": "^6.19.7",
+    "@sentry/node": "^7.26.0",
     "@trialspark/pigeon.ts": "^1.2.0",
     "@trialspark/toolbox": "^0.4.2",
     "autocannon": "^7.10.0",
