@@ -32,4 +32,4 @@ post-merge:
     check-yarn-lock:
       interactive: true
       files: 'git diff-tree -r --name-only --no-commit-id HEAD@{1} HEAD -- "*yarn.lock"'
-      run: 'echo $0'
+      run: 'echo "Is this a good question (y/n)?"; old_stty_cfg=$(stty -g);stty raw -echo ; answer=$(head -c 1) ; stty $old_stty_cfg; echo $answer'
