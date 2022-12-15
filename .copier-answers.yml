@@ -1,0 +1,11 @@
+# Changes here will be overwritten by Copier
+_commit: 0.7.0
+_src_path: nest-js-service-template
+github_team: null
+max_jest_workers: 3
+port: '3000'
+postgresql_db: foobar
+project_description: foobar
+repo_name: foobar
+run_yarn: false
+service_name: foobar

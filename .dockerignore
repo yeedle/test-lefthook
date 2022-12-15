@@ -1,0 +1,15 @@
+.circleci/
+.copier-answers.yml
+.dockerignore
+.eslintrc.js
+.git/
+.github/
+.gitignore
+.mikro_orm_cache/
+.prettierignore
+.prettierrc
+README.md
+container/Dockerfile
+lefthook.yml
+node_modules/
+yarn-error.log

@@ -1,0 +1,216 @@
+---
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@3.1
+  aws-ecr: circleci/aws-ecr@8.1.2
+  node: circleci/node@5.0.2
+  ts-orbs: trialspark/circleci-orbs@0.9.0
+
+node-version: &node-version '16.14.2'
+
+jobs:
+  test-build:
+    docker:
+      - image: cimg/node:16.14.2
+        environment:
+          POSTGRESQL_URL: postgresql://postgres@localhost/db
+          POSTGRESQL_URL_TEST: postgresql://postgres@localhost/db_test
+          NODE_PATH: .
+
+      - image: cimg/postgres:13.6
+        environment:
+          POSTGRES_USER: postgres
+
+    steps:
+      - aws-cli/setup:
+          profile-name: web-identity-profile
+          role-arn: 'arn:aws:iam::622627819221:role/trialspark-dist-reader'
+          role-session-name: 'circleci-workflow'
+          session-duration: '1800'
+      - run:
+          command: |-
+            echo "export AWS_CODEARTIFACT_AUTH_TOKEN='$(
+                aws --profile='web-identity-profile' codeartifact get-authorization-token \
+                    --domain trialspark \
+                    --domain-owner 622627819221 \
+                    --query authorizationToken \
+                    --output text
+            )'" >> $BASH_ENV
+      - run:
+          command: |-
+            createdb -h localhost -U postgres db_test
+            psql -h localhost -U postgres db_test -c 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'
+      - checkout
+      - node/install-packages:
+          pkg-manager: yarn
+      - run:
+          command: |-
+            yarn lint
+      - run:
+          command: |-
+            yarn format:check
+      - run:
+          command: |-
+            yarn test:cov
+      - run:
+          command: |-
+            yarn test:e2e
+      - run:
+          command: |-
+            yarn build
+      - store_artifacts:
+          path: coverage/lcov-report
+          destination: coverage-report
+
+  build-and-push-image:
+    docker:
+      - image: cimg/node:16.14.2
+    parameters:
+      image-tags:
+        type: string
+      build-target:
+        type: string
+        default: image
+    steps:
+      - aws-cli/setup:
+          profile-name: web-identity-profile
+          role-arn: 'arn:aws:iam::622627819221:role/trialspark-dist-reader'
+          role-session-name: 'circleci-workflow'
+          session-duration: '1800'
+      - run:
+          command: |-
+            echo "export AWS_CODEARTIFACT_AUTH_TOKEN='$(
+                aws --profile='web-identity-profile' codeartifact get-authorization-token \
+                    --domain trialspark \
+                    --domain-owner 622627819221 \
+                    --query authorizationToken \
+                    --output text
+            )'" >> $BASH_ENV
+      - aws-ecr/build-and-push-image:
+          setup-remote-docker: true
+          remote-docker-layer-caching: true
+          remote-docker-version: '20.10.17'
+          assume-web-identity: true
+          dockerfile: 'container/Dockerfile'
+          role-arn: 'arn:aws:iam::622627819221:role/ecr-trialspark-foobar-uploader'
+          role-session-name: 'circleci-workflow'
+          session-duration: '1800'
+          repo: 'trialspark/foobar'
+          extra-build-args: >-
+            --compress
+            --build-arg=BUILDKIT_INLINE_CACHE=1
+            --build-arg=IMAGE_TAG=$CIRCLE_BRANCH
+            --build-arg=aws_codeartifact_auth_token=$AWS_CODEARTIFACT_AUTH_TOKEN
+            --build-arg=org_opencontainers_image_created=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+            --build-arg=org_opencontainers_image_version=0.1.0
+            --build-arg=org_opencontainers_image_revision=${CIRCLE_SHA1::12}
+            --target='<< parameters.build-target >>'
+          tag: << parameters.image-tags >>
+
+  apollo-schema-publish:
+    docker:
+      - image: cimg/node:16.14.2
+        environment:
+          NODE_PATH: .
+    parameters:
+      routing_url:
+        description: The URL that our supergraph uses to communicate with the subgraph in a managed federation architecture.
+        type: string
+      supergraph_name:
+        description: The name of the supergraph to publish to
+        type: string
+    steps:
+      - aws-cli/setup:
+          profile-name: web-identity-profile
+          role-arn: 'arn:aws:iam::622627819221:role/trialspark-dist-reader'
+          role-session-name: 'circleci-workflow'
+          session-duration: '1800'
+      - run:
+          command: |-
+            echo "export AWS_CODEARTIFACT_AUTH_TOKEN='$(
+                aws --profile='web-identity-profile' codeartifact get-authorization-token \
+                    --domain trialspark \
+                    --domain-owner 622627819221 \
+                    --query authorizationToken \
+                    --output text
+            )'" >> $BASH_ENV
+      - checkout
+      - node/install-packages:
+          pkg-manager: yarn
+      - run:
+          name: Install rover
+          command: |
+            curl -sSL https://rover.apollo.dev/nix/v0.4.8 | sh
+      - run:
+          name: Publish GraphQL Schema to Apollo Studio
+          command: |
+            yarn -s run generate:merged-sdl | \
+              /home/circleci/.rover/bin/rover subgraph publish spark-pixa8b@<< parameters.supergraph_name >> \
+              --name foobar-graph --schema - \
+              --routing-url << parameters.routing_url >>
+
+build-and-push-image-defaults: &build-and-push-image-defaults
+  filters:
+    branches:
+      only: main
+  context:
+    - aws-auth
+  requires:
+    - test-build
+
+workflows:
+  test-build-push:
+    jobs:
+      - test-build:
+          context:
+            - aws-auth
+      - build-and-push-image:
+          name: Build and Push App
+          image-tags: '${CIRCLE_SHA1::12},$CIRCLE_BRANCH,latest'
+          <<: *build-and-push-image-defaults
+      - build-and-push-image:
+          name: Build and Push Migration Runner
+          <<: *build-and-push-image-defaults
+          image-tags: '${CIRCLE_SHA1::12}-migration-runner,${CIRCLE_BRANCH}-migration-runner,latest-migration-runner'
+          build-target: migration-runner
+      - ts-orbs/deploy:
+          name: deploy-development
+          <<: *build-and-push-image-defaults
+          context:
+            - aws-auth
+          environment: development
+          requires:
+            - Build and Push App
+            - Build and Push Migration Runner
+      - apollo-schema-publish:
+          name: Publish Subgraph Schema to Development Apollo Studio
+          <<: *build-and-push-image-defaults
+          context:
+            - aws-auth
+          requires:
+            - deploy-development
+          routing_url: 'https://foobar.development.trialspark.com/graphql'
+          supergraph_name: 'development'
+      - approve-production-deploy:
+          <<: *build-and-push-image-defaults
+          type: approval
+          requires:
+            - Publish Subgraph Schema to Development Apollo Studio
+      - ts-orbs/deploy:
+          name: deploy-production
+          <<: *build-and-push-image-defaults
+          context:
+            - aws-auth
+          environment: production
+          requires:
+            - approve-production-deploy
+      - apollo-schema-publish:
+          name: Publish Subgraph Schema to Production Apollo Studio
+          <<: *build-and-push-image-defaults
+          context:
+            - aws-auth
+          requires:
+            - deploy-production
+          routing_url: 'https://foobar.production.trialspark.com/graphql'
+          supergraph_name: 'production'

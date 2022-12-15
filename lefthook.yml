@@ -1,0 +1,28 @@
+# EXAMPLE USAGE
+# Refer for explanation to following link:
+# https://github.com/evilmartians/lefthook/blob/master/docs/full_guide.md
+#
+pre-push:
+  parallel: true
+  commands:
+    lint:
+      files: git diff --name-only HEAD @{push} || git diff --name-only HEAD main
+      glob: '{src,common,test}/*.ts'
+      run: yarn run eslint {files}
+    build:
+      run: yarn run build
+
+pre-commit:
+  parallel: true
+  commands:
+    prettier:
+      glob: '{src,common,test}/*.ts'
+      run: yarn run prettier --check {staged_files}
+    generate-graphql-types:
+      glob: '{src,common,test}/*.graphql'
+      run: yarn generate:graphql-types {staged_files}
+    forbidden-files:
+      glob: '*.rej'
+      run: 'echo "found copier update rejection files: {all_files}. Review them and remove them." && exit 1'
+    gitleaks:
+      run: gitleaks protect -v --redact --staged -c gitleaks.toml

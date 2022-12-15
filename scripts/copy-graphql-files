@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+function main
+{
+	local file
+	find src -name '*.graphql' -type f -print0 |
+		while IFS= read -r -d '' file; do
+			install "$file" -D dist/"${file#src/}"
+		done
+}
+
+main

@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    pull-request-branch-name:
+      separator: '_'
+    reviewers:
+      - 'None'
+    ignore:
+      - dependency-name: '@apollo/subgraph'
+        versions: ['>=2.0.0']

@@ -1,0 +1,18 @@
+extend type Query {
+  engineer(id: Int!): Engineer
+}
+
+extend type Mutation {
+  createEngineer(input: CreateEngineerInput): Engineer
+}
+
+type Engineer @key(fields: "id") {
+  id: ID!
+  firstName: String
+  lastName: String
+}
+
+input CreateEngineerInput {
+  firstName: String!
+  lastName: String!
+}
