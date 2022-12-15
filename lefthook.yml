@@ -32,4 +32,4 @@ post-merge:
     check-yarn-lock:
       interactive: true
       files: 'git diff-tree -r --name-only --no-commit-id HEAD@{1} HEAD -- "*yarn.lock"'
-      run: 'read -p "yarn.lock was updated. Do you want to run yarn to install? [y/n]" yesno'
+      run: 'echo $0'
