@@ -53,6 +53,7 @@
     "@sentry/node": "^6.19.7",
     "@trialspark/pigeon.ts": "^1.2.0",
     "@trialspark/toolbox": "^0.4.2",
+    "autocannon": "^7.10.0",
     "clefpadder": "^1.0.0",
     "dd-trace": "^3.8.0",
     "es-leftpad": "^1.0.0",
