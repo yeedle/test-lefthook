@@ -59,7 +59,7 @@
     "left_pad": "^0.0.11",
     "lodash": "^4.17.21",
     "mercurius": "^10.0.0",
-    "nest-winston": "^1.7.0",
+    "nest-winston": "^1.8.0",
     "nestjs-ddtrace": "^3.0.2",
     "reflect-metadata": "^0.1.13",
     "request-ip": "^2.1.3",
