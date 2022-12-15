@@ -5471,6 +5471,13 @@ kuler@^2.0.0:
   resolved "https://registry.yarnpkg.com/kuler/-/kuler-2.0.0.tgz#e2c570a3800388fb44407e851531c1d670b061b3"
   integrity sha512-Xq9nH7KlWZmXAtodXDDRE7vs6DU1gTU8zYDHDiWLSip45Egwq3plLHzPn27NgvzL2r1LMPC1vdqh98sQxtqj4A==
 
+left_pad@^0.0.11:
+  version "0.0.11"
+  resolved "https://registry.npmjs.org/left_pad/-/left_pad-0.0.11.tgz#80543b1a16a8661224f255ae56ee3a47ee692e49"
+  integrity sha512-/avWK5s6A/pTvbLiEDRA6jh8gugxuHRJqAYokWSvTo2Ay2TALkq3N++xujdAdGVT3L48iYJzFCzXAgTq/IibLQ==
+  dependencies:
+    string_prototypes ""
+
 leven@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/leven/-/leven-3.1.0.tgz#77891de834064cccba82ae7842bb6b14a13ed7f2"
@@ -7030,6 +7037,11 @@ string_decoder@~1.1.1:
   integrity sha512-n/ShnvDi6FHbbVfviro+WojiFzv+s8MPMHBczVePfUpDJLwoLT0ht1l4YwBCbi8pJAveEEdnkHyPyTP/mzRfwg==
   dependencies:
     safe-buffer "~5.1.0"
+
+string_prototypes@:
+  version "0.0.6"
+  resolved "https://registry.npmjs.org/string_prototypes/-/string_prototypes-0.0.6.tgz#10039f2f135d992c37653b57ee1a68e07c15d974"
+  integrity sha512-9pL+B3A/8+jlhPcDT+ztgdR8HfCjIjLqGm8inaSFgo8e3ZxACUbgyHgBg8bPo16NWkeKJVlCf8BEeIijjOUd/w==
 
 stringz@^2.1.0:
   version "2.1.0"
