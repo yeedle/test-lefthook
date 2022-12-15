@@ -26,3 +26,12 @@ pre-commit:
       run: 'echo "found copier update rejection files: {all_files}. Review them and remove them." && exit 1'
     gitleaks:
       run: gitleaks protect -v --redact --staged -c gitleaks.toml
+
+post-merge:
+  commands:
+    check-yarn-lock:
+      files: 'git diff-tree -r --name-only --no-commit-id HEAD@{1} HEAD -- "*yarn.lock"'
+      run: 'read -q "yarn.lock was updated. Do you want to run yarn to install? [Y/n]" && yarn'
+    check-mikroorm-migrations:
+      files: 'git diff-tree -r --name-only --no-commit-id HEAD@{1} HEAD -- "*migrations/Migration*.ts"'
+      run: 'read -q "There are new database migrations. Do you want to run `mikro-orm migration:up`` to migrate? [Y/n]" && NODE_PATH=. mikro-orm migration:up && NODE_PATH=. NODE_ENV=test mikro-orm migration:up' 
