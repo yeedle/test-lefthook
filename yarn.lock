@@ -10,17 +10,6 @@
     "@jridgewell/trace-mapping" "^0.3.0"
 
 
-"@angular-devkit/core@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@angular-devkit/core/-/core-14.2.1.tgz#7ce14efdb5fce687bb4f13bef03d4b67e971b22e"
-  integrity sha512-lW8oNGuJqr4r31FWBjfWQYkSXdiOHBGOThIEtHvUVBKfPF/oVrupLueCUgBPel+NvxENXdo93uPsqHN7bZbmsQ==
-  dependencies:
-    ajv "8.11.0"
-    ajv-formats "2.1.1"
-    jsonc-parser "3.1.0"
-    rxjs "6.6.7"
-    source-map "0.7.4"
-
 "@angular-devkit/core@14.2.2":
   version "14.2.2"
   resolved "https://registry.npmjs.org/@angular-devkit/core/-/core-14.2.2.tgz#d616ada7c9a0610454da47445e64520a0b34e400"
